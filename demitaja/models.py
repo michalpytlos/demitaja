@@ -38,10 +38,12 @@ class Posting(Base):
         title (str): job title
         posted (int): posted timestamp
         scraped (int): scraped timestamp
+        text (str): posting's full text
         employment_type (str): employment type
-        salary_to (int): min salary
+        salary_from (int): min salary
         salary_to (int): max salary
         salary_currency (str): currency of the salary
+        salary_period (str): salary period
     """
     __tablename__ = 'postings'
     id = Column(Integer, primary_key=True)
@@ -54,6 +56,7 @@ class Posting(Base):
     salary_from = Column(Integer)
     salary_to = Column(Integer)
     salary_currency = Column(String(80))
+    salary_period = Column(String(80))
     cities = relationship("City",
                           secondary=postings_cities_assoc,
                           back_populates="postings")
