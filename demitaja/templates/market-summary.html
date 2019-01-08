@@ -1,0 +1,50 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demitaja</title>
+</head>
+<body>
+  <h4>Most in-demand technologies</h4>
+  <ul>
+    {% for tech in techs %}
+      <li>{{ tech[0] }} : {{ tech[1] }}</li>
+    {% endfor %}
+  </ul>
+  <h4>Cities with most job postings</h4>
+  <ul>
+    {% for city in cities %}
+      <li>{{ city[0] }} : {{ city[1] }}</li>
+    {% endfor %}
+  </ul>
+  <h4>Number of job postings in {{ req_city }} : {{ city[1] }} </h4>
+  <h4>Demand for {{ req_tech }} : {{ tech[1] }} </h4>
+  <h4>Cities with most job postings requiring {{ req_tech }} </h4>
+  <ul>
+    {% for city in cities_tech %}
+      <li>{{ city[0] }} : {{ city[2] }}</li>
+    {% endfor %}
+  </ul>
+  <h4>Technologies most in-demand in {{ req_city }} </h4>
+  <ul>
+    {% for tech in techs_city %}
+      <li>{{ tech[0] }} : {{ tech[2] }}</li>
+    {% endfor %}
+  </ul>
+  <h4>Demand for {{ req_tech }} in {{ req_city }} : {{ tech_city[2] }}</h4>
+  <h4>Technologies most often required in postings requiring {{ req_tech }} ({{ tech[1] }})</h4>
+  <ul>
+    {% for tech in techs_tech %}
+      <li>{{ tech[0] }} : {{ tech[2] }}</li>
+    {% endfor %}
+  </ul>
+  <h4>Technologies most often required in postings requiring {{ req_tech }} in {{ req_city }} ({{ tech_city[2] }})</h4>
+  <ul>
+    {% for tech in techs_tech_city %}
+      <li>{{ tech[0] }} : {{ tech[3] }}</li>
+    {% endfor %}
+  </ul>
+</body>
+</html>
