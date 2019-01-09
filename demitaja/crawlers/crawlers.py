@@ -3,7 +3,7 @@ import json
 import time
 from urllib.parse import urljoin
 from scrapy.crawler import CrawlerProcess
-from demitaja.utils import create_posting, get_posting
+from demitaja.utils.utils import create_posting, get_posting
 
 
 class FluffSpider(scrapy.Spider):
@@ -29,7 +29,7 @@ class FluffSpider(scrapy.Spider):
             if not get_posting(posting['id']):
                 url = urljoin(FluffSpider.base_url, 'api/postingNew/' + posting['id'])
                 yield scrapy.Request(url, callback=self.parse_posting)
-                break
+                # break
 
     def parse_posting(self, response):
         """Parse full text of the posting and make a new posting

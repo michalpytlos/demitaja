@@ -74,10 +74,12 @@ class City(Base):
     Attributes:
         id (int): id of the city
         name (str): name of the city
+        name_ascii (str): lowercase ascii version of the city's name
     """
     __tablename__ = 'cities'
     id = Column(Integer, primary_key=True)
     name = Column(String(80), nullable=False)
+    name_ascii = Column(String(80), nullable=False)
     postings = relationship("Posting",
                             secondary=postings_cities_assoc,
                             back_populates="cities")
@@ -89,10 +91,12 @@ class Technology(Base):
     Attributes:
         id (int): id of the technology
         name (str): name of the technology
+        name_ascii (str): lowercase ascii version of the technology's name
     """
     __tablename__ = 'technologies'
     id = Column(Integer, primary_key=True)
     name = Column(String(80), nullable=False)
+    name_ascii = Column(String(80), nullable=False)
     postings_must = relationship("Posting",
                                  secondary=postings_must_assoc,
                                  back_populates="techs_must")

@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*- python
 from demitaja.models import Posting, City, Technology
 from demitaja.database import db_session
+import unicodedata
 
 
 # dummy postings
@@ -39,6 +41,18 @@ p2 = {
 def test_create():
     create_posting(p1)
     create_posting(p2)
+
+
+def normalize_string(s):
+    """Normalize string
+    Return lowercase ascii version of the input string
+    """
+    s = s.lower().replace('ł', 'l')
+    # unicodedata.normalize('NFD', s) decomposes each special character
+    # in the input string into letter and diacritic.
+    # Diacritics belong to the Mn (Mark, nonspacing) category.
+    # Normalization does no work for ł.
+    return ''.join((c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn'))
 
 
 def create_posting(posting_d):
@@ -82,9 +96,21 @@ def get_city(name):
     """Check if the city is already in the database;
     if not, make a new entry. Return the city.
     """
-    city = City.query.filter_by(name=name).scalar()
+    # TODO cater for alias names:
+    # 1. New table cities_aliases:
+    #   id (integer, primary key)
+    #   city_id (integer, foreign key)
+    #   alias_ascii (string, unique)
+    # 2. Modify get_city():
+    #   if cities query returns None, query cities_aliases:
+    #   .filter_by(alias_ascii=name_ascii)
+    # 3. New command_line tool for adding aliases:
+    #   * adds alias for an existing city
+    #   * if alias in cities, delete alias from cities and update postings_cities
+    name_ascii = normalize_string(name)
+    city = City.query.filter_by(name_ascii=name_ascii).scalar()
     if not city:
-        city = City(name=name)
+        city = City(name=name, name_ascii=name_ascii)
         db_session.add(city)
         db_session.commit()
         print('Added city to the db!')
@@ -95,9 +121,10 @@ def get_tech(name):
     """Check if the tech is already in the database;
     if not, make a new entry. Return the tech.
     """
-    tech = Technology.query.filter_by(name=name).scalar()
+    name_ascii = normalize_string(name)
+    tech = Technology.query.filter_by(name_ascii=name_ascii).scalar()
     if not tech:
-        tech = Technology(name=name)
+        tech = Technology(name=name, name_ascii=name_ascii)
         db_session.add(tech)
         db_session.commit()
         print('Added tech to the db!')
