@@ -8,6 +8,19 @@ from demitaja.utils.utils import normalize_string
 from demitaja.utils import queries
 
 
+###############################
+# Database session management #
+###############################
+
+@app.teardown_appcontext
+def remove_session(exception=None):
+    """Remove database session at the end of each request."""
+    db_session.remove()
+
+
+##################
+# View functions #
+##################
 
 @app.route('/')
 def home():
@@ -80,4 +93,3 @@ def summary():
                            req_city=city_name,
                            req_tech=tech_name,
                            **data)
-
