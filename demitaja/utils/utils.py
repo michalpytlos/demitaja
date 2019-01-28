@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*- python
+import unicodedata
 from demitaja.models import Posting, City, Technology
 from demitaja.database import db_session
-import unicodedata
+from demitaja.utils import queries
 
 
 # dummy postings
@@ -41,6 +42,29 @@ p2 = {
 def test_create():
     create_posting(p1)
     create_posting(p2)
+
+
+def check_item(request, item_type):
+    """"Check if item was requested; if so, check if item is in database
+
+    Args:
+        request (Request object)
+        item_type (str): type of item to be checked;
+            must be either tech or city
+
+    Returns:
+         normalized name of the tech (str)
+         database name of the tech (str)
+         number of postings with the tech as must (int)
+    """
+    name_ascii = normalize_string(request.args.get('req_' + item_type, ''))
+    if not name_ascii:
+        return None, None, 0
+    query = getattr(queries, item_type)
+    item = db_session.execute(query, {item_type: name_ascii}).fetchone()
+    if not item:
+        return name_ascii, None, 0
+    return name_ascii, item[0], item[1]
 
 
 def normalize_string(s):

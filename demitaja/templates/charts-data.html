@@ -1,0 +1,36 @@
+<!-- Charts data in textual format -->
+  {% if city_name %}
+  <h4>Number of job postings in {{ city_name }} : {{ city_count }} </h4>
+  <h4>Technologies most in-demand in {{ city_name }} </h4>
+  <ul>
+    {% for tech in techs_city %}
+      <li>{{ tech[0] }} : {{ tech[2] }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if tech_name %}
+  <h4>Number of job postings with {{ tech_name }} as must : {{ tech_count }} </h4>
+  <h4>Cities with most job postings requiring {{ tech_name }} </h4>
+  <ul>
+    {% for city in cities_tech %}
+      <li>{{ city[0] }} : {{ city[2] }}</li>
+    {% endfor %}
+  </ul>
+  <h4>Technologies most often required in postings requiring {{ tech_name }} ({{ tech_count }})</h4>
+  <ul>
+    {% for tech in techs_tech %}
+      <li>{{ tech[0] }} : {{ tech[2] }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if city_name and tech_name %}
+  <h4>Demand for {{ tech_name }} in {{ city_name }} : {{ tech_city[2] }}</h4>
+  <h4>Technologies most often required in postings requiring {{ tech_name }} in {{ city_name }} ({{ tech_city[2] }})</h4>
+  <ul>
+    {% for tech in techs_tech_city %}
+      <li>{{ tech[0] }} : {{ tech[3] }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}

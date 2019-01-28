@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <style>
+    .chart {
+      display: block;
+      width: 500px;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+  <title>Demitaja</title>
+</head>
+<h3>IT job market</h3>
+<h4>Choose chart type and specify city and/or technology for more specific information</h4>
+<body>
+  <!-- Specify technology and/or city form -->
+  <form>
+    <label for="req-tech">Technology</label><br>
+    <input type="text" id="req-tech" name="req_tech" value="" size="50"><br><br>
+    <label for="req-city">City</label><br>
+    <input type="text" id="req-city" name="req_city" value="" size="50"><br><br>
+    <label for="chart-type">Chart type</label><br>
+    <!-- Temporary workaround for concurrent-chart-creation bug: the user choses which chart is to be created p1 -->
+    <select id="chart-type" name="chart-type">
+      <option value="cities">Cities</option>
+      <option value="techs">Technologies</option>
+      <option value="techs-tech">Buddy Technologies</option>
+    </select><br><br>
+    <!-- End of workaround p1 -->
+    <input type="submit" value="Submit">
+  </form>
+  <!-- Metadata -->
+  <h4>Total number of job postings: {{ total_postings }} </h4>
+  <h4>Data collected from {{ oldest }} to {{ newest }} </h4>
+  <!-- Charts -->
+  <img class="chart hidden" id="chart-cities" src="" />
+  <img class="chart hidden" id="chart-techs" src="" />
+  <img class="chart hidden" id="chart-techs-tech" src="" />
+  <!-- Charts data in textual format -->
+  <h4>Most in-demand technologies</h4>
+  <ul>
+    {% for tech in techs %}
+      <li>{{ tech[0] }} : {{ tech[1] }}</li>
+    {% endfor %}
+  </ul>
+  <h4>Cities with most job postings</h4>
+  <ul>
+    {% for city in cities %}
+      <li>{{ city[0] }} : {{ city[1] }}</li>
+    {% endfor %}
+  </ul>
+  <div id="charts-data">
+  </div>
+  <script>
+    /** Fetch all charts from demitaja api */
+    $('form').submit(function( event ) {
+      event.preventDefault();
+      // Get user input from form
+      var tech = $(this).children('#req-tech').val();
+      var city = $(this).children('#req-city').val();
+      // List of api endpoints to send request to
+      // var endpoints = ["cities", "techs", "techs-tech"];
+      // Temporary workaround for concurrent-chart-creation bug: the user choses which chart is to be created p2
+      var endpoints = [$(this).children('select').val()];
+      // End of workaround p2
+      // Loop over endpoints
+      for (var i = 0; i < endpoints.length; ++i) {
+        $.ajax({
+          url:  '/api/' + endpoints[i] +
+           '?req_city=' + city +
+            '&req_tech=' + tech,
+          method: 'GET',
+          dataType: 'json',
+          success: function(chart) {
+            // Display chart
+            if (chart.base64) {
+              $('#chart-' + chart.name).attr('src', 'data:image/png;base64, '+ chart.base64)
+              $('#chart-' + chart.name).removeClass('hidden')
+            }
+          },
+          error: function(){
+            alert('Chart could not be created');
+          },
+         });
+      }
+      // Charts data in textual format
+      $.ajax({
+        url:  '/api/charts-data' +
+         '?req_city=' + city +
+          '&req_tech=' + tech,
+        method: 'GET',
+        dataType: 'html',
+        success: function(text) {
+          $('#charts-data').html(text)
+        },
+        error: function(){
+          alert('Textual charts data could not be retrieved');
+        },
+       });
+    });
+  </script>
+</body>
+</html>
