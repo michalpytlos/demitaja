@@ -25,14 +25,6 @@
     <input type="text" id="req-tech" name="req_tech" value="" size="50"><br><br>
     <label for="req-city">City</label><br>
     <input type="text" id="req-city" name="req_city" value="" size="50"><br><br>
-    <label for="chart-type">Chart type</label><br>
-    <!-- Temporary workaround for concurrent-chart-creation bug: the user choses which chart is to be created p1 -->
-    <select id="chart-type" name="chart-type">
-      <option value="cities">Cities</option>
-      <option value="techs">Technologies</option>
-      <option value="techs-tech">Buddy Technologies</option>
-    </select><br><br>
-    <!-- End of workaround p1 -->
     <input type="submit" value="Submit">
   </form>
   <!-- Metadata -->
@@ -65,10 +57,7 @@
       var tech = $(this).children('#req-tech').val();
       var city = $(this).children('#req-city').val();
       // List of api endpoints to send request to
-      // var endpoints = ["cities", "techs", "techs-tech"];
-      // Temporary workaround for concurrent-chart-creation bug: the user choses which chart is to be created p2
-      var endpoints = [$(this).children('select').val()];
-      // End of workaround p2
+      var endpoints = ["cities", "techs", "techs-tech"];
       // Loop over endpoints
       for (var i = 0; i < endpoints.length; ++i) {
         $.ajax({

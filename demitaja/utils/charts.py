@@ -1,12 +1,13 @@
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.figure import Figure
 from io import BytesIO
 import base64
 
 
 def bar_single(items, total, title=None, highlight=None):
-    """Create simple bar chart.
+    """Create single bar chart.
 
     Args:
         items (list): list of tuples (item_name, value) where
@@ -27,13 +28,14 @@ def bar_single(items, total, title=None, highlight=None):
     if highlight:
         color[highlight] = '#ff7c43'
     # create chart
+    fig, ax = create_figure()
     x = range(len(values))
-    plt.bar(x, values, color=color, width=0.5)
-    plt.xticks(x, names,  rotation='vertical')
-    plt.title(title)
-    plt.ylabel('% of all job postings')
-    plt.tight_layout()
-    return get_chart_base64()
+    ax.bar(x, values, color=color, width=0.5)
+    ax.set_xticks(x)
+    ax.set_xticklabels(names, rotation='vertical')
+    ax.set_title(title)
+    ax.set_ylabel('% of all job postings')
+    return get_chart_base64(fig)
 
 
 def bar_double(items, total, title=None, legend=None, highlight=None):
@@ -64,22 +66,46 @@ def bar_double(items, total, title=None, legend=None, highlight=None):
     color2 = ['#ff7c43' for i in range(len(names))]
     color1 = ['#2f4b7c' for i in range(len(names))]
     # create chart
+    fig, ax = create_figure()
     width = 0.35
     ind = range(len(values1))
-    plt.bar(ind, values2, color=color2, width=width, label=legend[1])
-    plt.bar([x + width for x in ind], values1, color=color1, width=width, label=legend[0])
-    plt.xticks([x + width/2 for x in ind], names, rotation='vertical')
-    plt.title(title)
-    plt.ylabel('% of all job postings')
-    plt.legend()
-    plt.tight_layout()
-    return get_chart_base64()
+    ax.bar(ind, values2, color=color2, width=width, label=legend[1])
+    ax.bar([x + width for x in ind], values1, color=color1, width=width, label=legend[0])
+    ax.set_xticks([x + width/2 for x in ind])
+    ax.set_xticklabels(names, rotation='vertical')
+    ax.set_title(title)
+    ax.set_ylabel('% of all job postings')
+    ax.legend()
+    return get_chart_base64(fig)
 
 
-def get_chart_base64():
+def create_figure():
+    """Create new Figure and add an Axes to it
+
+    Returns:
+        instance of matplotlib.figure.Figure
+        instance of matplotlib.axes.Axes
+    """
+    fig = Figure(tight_layout=True)
+    # Attach canvas to figure
+    FigureCanvasAgg(fig)
+    # Add Axes to figure
+    ax = fig.add_subplot(111)
+    return fig, ax
+
+
+def get_chart_base64(fig):
+    """Save chart to buffer and encode in Base64 scheme
+
+    Args:
+        fig (object): instance of matplotlib.figure.Figure
+
+    Returns:
+        Base64 encoded chart object (str)
+    """
     buf = BytesIO()
-    plt.savefig(buf, format='png', dpi=300)
-    plt.close()
+    fig.savefig(buf, format='png', dpi=300)
+    fig.clf()
     image_base64 = base64.b64encode(buf.getvalue()).decode('utf-8').replace('\n', '')
     buf.close()
     return image_base64
