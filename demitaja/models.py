@@ -39,11 +39,6 @@ class Posting(Base):
         posted (int): posted timestamp
         scraped (int): scraped timestamp
         text (str): posting's full text
-        employment_type (str): employment type
-        salary_from (int): min salary
-        salary_to (int): max salary
-        salary_currency (str): currency of the salary
-        salary_period (str): salary period
     """
     __tablename__ = 'postings'
     id = Column(Integer, primary_key=True)
@@ -52,11 +47,6 @@ class Posting(Base):
     posted = Column(Integer, nullable=False)
     scraped = Column(Integer, nullable=False)
     text = Column(String(5000), nullable=False)
-    employment_type = Column(String(80))
-    salary_from = Column(Integer)
-    salary_to = Column(Integer)
-    salary_currency = Column(String(80))
-    salary_period = Column(String(80))
     cities = relationship("City",
                           secondary=postings_cities_assoc,
                           back_populates="postings")
@@ -66,6 +56,9 @@ class Posting(Base):
     techs_nice = relationship("Technology",
                               secondary=postings_nice_assoc,
                               back_populates="postings_nice")
+    salaries = relationship("Salary",
+                            cascade="all, delete-orphan",
+                            back_populates="posting")
 
 
 class City(Base):
@@ -103,3 +96,27 @@ class Technology(Base):
     postings_nice = relationship("Posting",
                                  secondary=postings_nice_assoc,
                                  back_populates="techs_nice")
+
+
+class Salary(Base):
+    """This class defines attributes of salary and metadata of the
+   table to which this class is mapped.
+   Attributes:
+       id (int): id of the salary
+       posting_id (int): id of the parent posting
+       employment_type_ascii (str): employment type in lowercase ascii
+       salary_from (int): min salary
+       salary_to (int): max salary
+       salary_currency (str): currency of the salary
+       salary_period (str): salary period
+    """
+    __tablename__ = 'salaries'
+    id = Column(Integer, primary_key=True)
+    posting_id = Column(Integer, ForeignKey('postings.id'))
+    employment_type_ascii = Column(String(80))
+    salary_from = Column(Integer)
+    salary_to = Column(Integer)
+    salary_currency = Column(String(80))
+    salary_period = Column(String(80))
+    posting = relationship("Posting",
+                           back_populates="salaries")

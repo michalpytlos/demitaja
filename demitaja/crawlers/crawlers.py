@@ -36,21 +36,21 @@ class FluffSpider(scrapy.Spider):
         entry in the database.
         """
         try:
-            posting_raw = json.loads(response.text)['posting']
+            posting_raw = json.loads(response.text)
             posting = {
                 'web_id': posting_raw['id'],
-                'title': '{} {}'.format(posting_raw['title']['title'], posting_raw['title']['level']),
+                'title': posting_raw['title'],
                 'posted': int(posting_raw['posted']/1000),
                 'scraped': int(time.time()),
                 'text': json.dumps(posting_raw),
-                'employment_type': posting_raw['essentials']['employmentType'],
-                'salary_from': posting_raw['essentials']['salaryFrom'],
-                'salary_to': posting_raw['essentials']['salaryTo'],
-                'salary_currency': posting_raw['essentials']['salaryCurrency'],
-                'salary_period': posting_raw['essentials']['salaryDuration'],
-                'cities': [posting_raw['city']] + [loc['city'] for loc in posting_raw.get('otherLocations', [])],
-                'techs_must': [must['value'] for must in posting_raw['musts']],
-                'techs_nice': [nice['value'] for nice in posting_raw['nices']]
+                'salaries': posting_raw['essentials']['salary']['types'],
+                'salary_currency': posting_raw['essentials']['salary']['currency'],
+                'salary_period': posting_raw['essentials']['salary']['period'],
+                'cities': [loc['city'] for loc in posting_raw['location']['places']],
+                'techs_must': [must['value'] for must in posting_raw['requirements']['musts']
+                               if must['type'] == 'main'],
+                'techs_nice': [nice['value'] for nice in posting_raw['requirements']['nices']
+                               if nice['type'] == 'main']
             }
             create_posting(posting)
         except KeyError as err:

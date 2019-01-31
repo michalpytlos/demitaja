@@ -1,47 +1,8 @@
 # -*- coding: utf-8 -*- python
 import unicodedata
-from demitaja.models import Posting, City, Technology
+from demitaja.models import Posting, City, Technology, Salary
 from demitaja.database import db_session
 from demitaja.utils import queries
-
-
-# dummy postings
-p1 = {
-    'web_id': 'GRR3455RET',
-    'title': 'Dev1',
-    'posted': 80482,
-    'scraped': 90000,
-    'text': 'text of posting 1',
-    'employment_type': 'permanent',
-    'salary_from': 4000,
-    'salary_to': 5000,
-    'salary_currency': 'PLN',
-    'salary_period': 'month',
-    'cities': ['Warsaw'],
-    'techs_must': ['Python', 'Django', 'Git'],
-    'techs_nice': ['unittest', 'PostgreSQL']
-}
-
-p2 = {
-    'web_id': 'DSAER345',
-    'title': 'Dev2',
-    'posted': 80988,
-    'scraped': 90500,
-    'text': 'text of posting 2',
-    'employment_type': 'B2B',
-    'salary_from': 7500,
-    'salary_to': 9000,
-    'salary_currency': 'PLN',
-    'salary_period': 'month',
-    'cities': ['Krakow'],
-    'techs_must': ['Python', 'C++', 'Pandas'],
-    'techs_nice': ['unittest', 'MySQL']
-}
-
-
-def test_create():
-    create_posting(p1)
-    create_posting(p2)
 
 
 def check_item(request, item_type):
@@ -80,16 +41,20 @@ def normalize_string(s):
 
 
 def create_posting(posting_d):
+    """Add posting with all its relationships to the database"""
     # check if this is a new posting
     posting = get_posting(posting_d['web_id'])
     if posting:
         print('Posting already in the db')
         return
-    # extract city and technologies
+    # extract cities, technologies and salaries
     p_cities = posting_d.pop('cities')
     p_techs_must = posting_d.pop('techs_must')
     p_techs_nice = posting_d.pop('techs_nice')
-    # create posting object
+    p_salaries = posting_d.pop('salaries')
+    p_salary_currency = posting_d.pop('salary_currency')
+    p_salary_period = posting_d.pop('salary_period')
+    # insert posting into the postings table
     posting = Posting(**posting_d)
     db_session.add(posting)
     db_session.commit()
@@ -103,10 +68,31 @@ def create_posting(posting_d):
     for tech in p_techs_nice:
         nice = get_tech(tech)
         posting.techs_nice.append(nice)
-    # insert posting to the db
+    # create salaries
+    for key, val in p_salaries.items():
+        create_salary(posting.id, key, val, p_salary_currency, p_salary_period)
+    # update posting
     db_session.add(posting)
     db_session.commit()
     print('Added posting to the db!')
+
+
+def create_salary(posting_id, employment_type, sal, sal_currency, sal_period):
+    """Insert salary into the salaries table"""
+    sal_from = sal['range'][0]
+    sal_to = sal['range'][1] if len(sal['range']) == 2 else sal_from
+    salary_dict = {
+        'posting_id': posting_id,
+        'employment_type_ascii': normalize_string(employment_type),
+        'salary_from': sal_from,
+        'salary_to': sal_to,
+        'salary_currency': sal_currency,
+        'salary_period': sal_period
+    }
+    salary = Salary(**salary_dict)
+    db_session.add(salary)
+    db_session.commit()
+    print('Added salary to the db!')
 
 
 def get_posting(web_id):
